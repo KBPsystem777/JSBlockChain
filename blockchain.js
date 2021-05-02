@@ -85,7 +85,7 @@ class Blockchain {
     var new_chain = null
     var flag = 0
     var tmp_length = 0
-    max_length = this.chain.length
+    var max_length = this.chain.length
     neighbours.forEach((node) => {
       var xmlHttp = new XMLHttpRequest()
       xmlHttp.onreadystatechange = function () {

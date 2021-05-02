@@ -54,8 +54,7 @@ app.post("/transations/new", function (req, res) {
   }
   let index = Blockchain.new_transaction(
     req.query.sender,
-    req,
-    query.recipient,
+    req.query.recipient,
     req.query.amount
   )
   res.send("Transaction will be added to block " + index)
