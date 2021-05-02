@@ -1,12 +1,11 @@
 "use strict"
-
-const express = require("express")
-const app = express()
-
+var express = require("express")
+var app = express()
+app.use(express.json())
 const Blockchain = require("./blockchain")
 
 function uuidv4() {
-  return "xxxxxxxx-xxxx-KBPxxxxxxx-yxxx-xxxxxxxxxxxx".replace(
+  return "xxxxxxxx-xxxx-KBPxxxx-yxxx-xxxxxxxxxxxx".replace(
     /[xy]/g,
     function (c) {
       var r = (Math.random() * 16) | 0,
@@ -19,11 +18,11 @@ function uuidv4() {
 let node_id = uuidv4()
 
 app.get("/", function (req, res) {
-  res.send(JSON.stringify(Blockchain.chain))
+  res.json(Blockchain)
 })
 
 app.get("/chain", function (req, res) {
-  res.send(JSON.stringify(Blockchain.chain))
+  res.json(Blockchain.chain)
 })
 
 app.get("/mine", function (req, res) {
@@ -36,48 +35,58 @@ app.get("/mine", function (req, res) {
   }
   var proof = Blockchain.proof_of_work(last_proof)
 
+  /*  
+        Add a bitcoin for the miner
+        0 in sender means it is being mined (no sender, sender is the blockchain)
+        recipient is node ID
+    */
   var index = Blockchain.new_transaction(0, node_id, 1)
 
   let previous_hash = Blockchain.hash(last_block)
   let block = Blockchain.new_block(proof, previous_hash)
-  res.send(JSON.stringify(block))
+
+  res.json(block)
 })
 
-app.post("/transations/new", function (req, res) {
+app.post("/transactions/new", function (req, res) {
   if (
-    req.query.sender === "" ||
-    req.query.amount === "" ||
-    req.query.recipient === ""
+    req.body.sender == "" ||
+    req.body.amount == "" ||
+    req.body.recipient == ""
   ) {
-    res.send("Missing values")
-    return
+    res.json("Missing values")
   }
   let index = Blockchain.new_transaction(
-    req.query.sender,
-    req.query.recipient,
-    req.query.amount
+    req.body.sender,
+    req.body.recipient,
+    req.body.amount
   )
-  res.send("Transaction will be added to block " + index)
+  res.json({
+    message: "Transaction will be added to block " + index,
+    data: {
+      sender: req.body.sender,
+      amount: req.body.amount,
+      recipient: req.body.recipient,
+    },
+  })
 })
 
 app.post("/nodes/register", function (req, res) {
-  var nodes = req.query.nodes
+  var nodes = req.body.nodes
   if (nodes === "") {
-    res.send("Provide a list of nodes")
+    res.send("Provide a list of nodes or leave me alone")
   }
   nodes.forEach((element) => {
     Blockchain.register_node(element)
   })
-  res.send("Nodes will be added to the block")
+  res.json("Nodes will be added to the block ")
 })
 
 app.get("/nodes/resolve", function (req, res) {
   var replaced = Blockchain.resolve_conflicts()
-  res.send(JSON.stringify(Blockchain))
+  res.json(Blockchain)
 })
+var myArgs = 3030 //process.argv.slice(2)[0] || 5000
+console.log("Launching JSBlockChain in port: ", myArgs)
 
-const PORT = process.env.PORT || 1993
-
-console.log("Launching the blockchain in port: ", PORT)
-
-const server = app.listen(PORT, function () {})
+var server = app.listen(myArgs, function () {})

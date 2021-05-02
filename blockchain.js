@@ -38,7 +38,6 @@ class Blockchain {
     this._current_transactions = []
     //Add genesis block
     this.new_block(100, 1)
-    console.log(JSON.stringify(this.chain))
   }
 
   get chain() {
@@ -152,7 +151,7 @@ class Blockchain {
       Buffer.from(proof.toString()).toString("base64") +
       Buffer.from(last_proof.toString()).toString("base64")
     var hash = createHash.createHash("sha256").update(guess).digest("base64")
-    return hash.startsWith("0000")
+    return hash.startsWith("0")
   }
 
   hash(block) {
